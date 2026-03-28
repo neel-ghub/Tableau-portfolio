@@ -9,6 +9,17 @@ html {
     scroll-behavior: smooth;
 }
 
+/* Hide Emergent branding */
+#emergent-badge,
+[id*="emergent"],
+[class*="emergent-badge"],
+a[href*="emergent.sh"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 /* Print styles for PDF generation */
 @media print {
     @page {
@@ -22,6 +33,14 @@ html {
     }
     
     .no-print {
+        display: none !important;
+    }
+    
+    /* Hide Emergent branding in PDF */
+    #emergent-badge,
+    [id*="emergent"],
+    [class*="emergent-badge"],
+    a[href*="emergent.sh"] {
         display: none !important;
     }
 }

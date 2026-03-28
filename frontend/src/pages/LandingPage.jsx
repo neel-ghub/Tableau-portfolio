@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { FileText, Layout, ExternalLink } from 'lucide-react';
+import { FileText, ExternalLink } from 'lucide-react';
 import { personalInfo } from '../data/portfolioData';
 
 const LandingPage = () => {
@@ -22,41 +22,22 @@ const LandingPage = () => {
           </p>
         </div>
 
-        {/* Layout Options */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* Single Page Layout */}
+        {/* Main CTA */}
+        <div className="max-w-xl mx-auto mb-12">
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border-2 border-white/20 hover:border-[#E8A020] transition-all hover:transform hover:scale-105">
             <div className="flex items-center gap-3 mb-4">
               <FileText size={32} className="text-[#E8A020]" />
-              <h2 className="text-2xl font-bold">Scrollable View</h2>
+              <h2 className="text-2xl font-bold">View Portfolio</h2>
             </div>
             <p className="text-gray-300 mb-6">
-              Single-page scrollable layout presenting all 8 pages in a continuous flow. 
-              Perfect for quick browsing and overview.
+              Explore my complete 8-page portfolio showcasing Sales Dashboard analytics 
+              with interactive visualizations and technical insights.
             </p>
             <Button 
-              onClick={() => navigate('/single')}
-              className="w-full bg-[#E8A020] hover:bg-[#0D9488] text-white font-bold py-3"
+              onClick={() => navigate('/portfolio')}
+              className="w-full bg-[#E8A020] hover:bg-[#0D9488] text-white font-bold py-3 text-lg"
             >
-              View Scrollable Layout
-            </Button>
-          </div>
-
-          {/* Multi Page Layout */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border-2 border-white/20 hover:border-[#E8A020] transition-all hover:transform hover:scale-105">
-            <div className="flex items-center gap-3 mb-4">
-              <Layout size={32} className="text-[#E8A020]" />
-              <h2 className="text-2xl font-bold">Page-by-Page</h2>
-            </div>
-            <p className="text-gray-300 mb-6">
-              Navigate through individual pages with prev/next controls. 
-              Ideal for focused reading and presentation mode.
-            </p>
-            <Button 
-              onClick={() => navigate('/multi?page=1')}
-              className="w-full bg-[#1457A8] hover:bg-[#0D9488] text-white font-bold py-3"
-            >
-              View Page Navigation
+              View Portfolio
             </Button>
           </div>
         </div>
