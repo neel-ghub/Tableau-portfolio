@@ -5,15 +5,14 @@ import { SalesKPI, ProfitKPI, SubCategoryAnalysis, HeatmapPage, YOYTrends } from
 import TechnicalSummary from '../components/TechnicalSummary';
 import { Button } from '../components/ui/button';
 import { Download, ChevronDown } from 'lucide-react';
-import { useReactToPrint } from 'react-to-print';
+import { generatePDF } from '../utils/pdfGenerator';
 
 const SinglePageLayout = () => {
   const contentRef = useRef();
 
-  const handlePrint = useReactToPrint({
-    content: () => contentRef.current,
-    documentTitle: 'Neelkumar_Prajapati_Tableau_Portfolio',
-  });
+  const handleDownloadPDF = async () => {
+    await generatePDF(contentRef.current, 'Neelkumar_Prajapati_Tableau_Portfolio.pdf');
+  };
 
   const scrollToNext = () => {
     window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
@@ -24,7 +23,7 @@ const SinglePageLayout = () => {
       {/* Floating Download Button */}
       <div className="fixed top-6 right-6 z-50">
         <Button 
-          onClick={handlePrint}
+          onClick={handleDownloadPDF}
           className="bg-[#E8A020] hover:bg-[#1457A8] text-white shadow-lg flex items-center gap-2"
         >
           <Download size={20} />

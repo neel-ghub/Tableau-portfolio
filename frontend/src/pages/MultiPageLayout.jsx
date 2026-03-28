@@ -6,7 +6,7 @@ import { SalesKPI, ProfitKPI, SubCategoryAnalysis, HeatmapPage, YOYTrends } from
 import TechnicalSummary from '../components/TechnicalSummary';
 import { Button } from '../components/ui/button';
 import { Download, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
-import { useReactToPrint } from 'react-to-print';
+import { generatePDF } from '../utils/pdfGenerator';
 
 const pages = [
   { id: 1, title: 'Cover', component: PortfolioCover },
@@ -28,10 +28,34 @@ const MultiPageLayout = () => {
   const currentPageIndex = pageParam ? parseInt(pageParam) - 1 : 0;
   const CurrentPageComponent = pages[currentPageIndex].component;
 
-  const handlePrint = useReactToPrint({
-    content: () => contentRef.current,
-    documentTitle: 'Neelkumar_Prajapati_Tableau_Portfolio',
-  });
+  const handleDownloadPDF = async () => {
+    // For multi-page, we need to render all pages first
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '0';
+    document.body.appendChild(tempContainer);
+
+    // Render all pages
+    pages.forEach((page) => {
+      const PageComponent = page.component;
+      const pageDiv = document.createElement('div');
+      tempContainer.appendChild(pageDiv);
+      
+      // Use React to render component
+      const root = require('react-dom/client').createRoot(pageDiv);
+      root.render(<PageComponent />);
+    });
+
+    // Wait for render
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Generate PDF
+    await generatePDF(tempContainer, 'Neelkumar_Prajapati_Tableau_Portfolio.pdf');
+
+    // Cleanup
+    document.body.removeChild(tempContainer);
+  };
 
   const goToPage = (pageNumber) => {
     navigate(`/multi?page=${pageNumber}`);
@@ -77,7 +101,7 @@ const MultiPageLayout = () => {
           </div>
 
           <Button 
-            onClick={handlePrint}
+            onClick={handleDownloadPDF}
             className="bg-[#E8A020] hover:bg-[#1457A8] text-white flex items-center gap-2"
             size="sm"
           >
