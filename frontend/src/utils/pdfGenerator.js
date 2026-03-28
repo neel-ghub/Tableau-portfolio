@@ -3,13 +3,17 @@ import jsPDF from 'jspdf';
 
 export const generatePDF = async (elementRef, fileName = 'portfolio.pdf') => {
   if (!elementRef) {
+    alert('Error: No content found to generate PDF');
     console.error('No element reference provided');
     return;
   }
 
   try {
+    console.log('Starting PDF generation...');
+    
     // Show loading indicator
     const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'pdf-loading';
     loadingDiv.innerHTML = `
       <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
                   background: rgba(13, 27, 46, 0.95); color: white; padding: 30px 50px; 
@@ -17,7 +21,7 @@ export const generatePDF = async (elementRef, fileName = 'portfolio.pdf') => {
                   box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
         <div style="text-align: center;">
           <div style="margin-bottom: 15px;">Generating PDF...</div>
-          <div style="color: #E8A020; font-size: 14px;">This may take a moment</div>
+          <div style="color: #E8A020; font-size: 14px;">Please wait, this will take 10-15 seconds</div>
         </div>
       </div>
     `;
@@ -27,10 +31,14 @@ export const generatePDF = async (elementRef, fileName = 'portfolio.pdf') => {
     const pages = elementRef.querySelectorAll('.min-h-screen');
     
     if (pages.length === 0) {
+      alert('Error: No pages found. Please try again.');
       console.error('No pages found');
-      document.body.removeChild(loadingDiv);
+      const loading = document.getElementById('pdf-loading');
+      if (loading) document.body.removeChild(loading);
       return;
     }
+
+    console.log(`Found ${pages.length} pages to convert`);
 
     // Create PDF
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -40,21 +48,28 @@ export const generatePDF = async (elementRef, fileName = 'portfolio.pdf') => {
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i];
       
+      console.log(`Processing page ${i + 1}/${pages.length}...`);
+      
       // Scroll to the page to ensure it's rendered
       page.scrollIntoView({ behavior: 'instant', block: 'start' });
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Capture the page as canvas
       const canvas = await html2canvas(page, {
-        scale: 2,
+        scale: 1.5,
         useCORS: true,
-        logging: false,
+        logging: true,
         backgroundColor: '#ffffff',
         windowWidth: 1920,
-        windowHeight: page.scrollHeight
+        windowHeight: page.scrollHeight,
+        onclone: (clonedDoc) => {
+          // Remove fixed elements that might cause issues
+          const fixed = clonedDoc.querySelectorAll('[style*="fixed"]');
+          fixed.forEach(el => el.style.position = 'absolute');
+        }
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const imgWidth = pdfWidth;
       const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
@@ -63,50 +78,63 @@ export const generatePDF = async (elementRef, fileName = 'portfolio.pdf') => {
         pdf.addPage();
       }
 
-      // Add image to PDF, fitting to page
+      // Add image to PDF
       if (imgHeight <= pdfHeight) {
-        // Image fits in one page
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
       } else {
-        // Image needs to be scaled to fit
         const scaledHeight = pdfHeight;
         const scaledWidth = (canvas.width * pdfHeight) / canvas.height;
         const xOffset = (pdfWidth - scaledWidth) / 2;
-        pdf.addImage(imgData, 'PNG', xOffset, 0, scaledWidth, scaledHeight);
+        pdf.addImage(imgData, 'JPEG', Math.max(0, xOffset), 0, scaledWidth, scaledHeight);
       }
+      
+      console.log(`Page ${i + 1} added to PDF`);
     }
 
+    console.log('Saving PDF...');
+    
     // Save the PDF
     pdf.save(fileName);
+    
+    console.log('PDF saved successfully!');
 
     // Remove loading indicator
-    document.body.removeChild(loadingDiv);
+    const loading = document.getElementById('pdf-loading');
+    if (loading) document.body.removeChild(loading);
 
     // Show success message
     const successDiv = document.createElement('div');
+    successDiv.id = 'pdf-success';
     successDiv.innerHTML = `
       <div style="position: fixed; top: 20px; right: 20px; 
                   background: #0D9488; color: white; padding: 15px 30px; 
                   border-radius: 8px; z-index: 99999; font-size: 16px; font-weight: bold;
-                  box-shadow: 0 5px 20px rgba(0,0,0,0.3); animation: slideIn 0.3s ease-out;">
-        ✓ PDF Downloaded Successfully!
+                  box-shadow: 0 5px 20px rgba(0,0,0,0.3);">
+        ✓ PDF Downloaded! Check your Downloads folder
       </div>
-      <style>
-        @keyframes slideIn {
-          from { transform: translateX(400px); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-      </style>
     `;
     document.body.appendChild(successDiv);
     setTimeout(() => {
-      if (document.body.contains(successDiv)) {
-        document.body.removeChild(successDiv);
+      const success = document.getElementById('pdf-success');
+      if (success && document.body.contains(success)) {
+        document.body.removeChild(success);
       }
-    }, 3000);
+    }, 5000);
+
+    // Also alert the user
+    setTimeout(() => {
+      alert(`PDF downloaded successfully!\n\nFile name: ${fileName}\nLocation: Your browser's Downloads folder`);
+    }, 500);
 
   } catch (error) {
     console.error('Error generating PDF:', error);
-    alert('Error generating PDF. Please try again.');
+    
+    // Remove loading if exists
+    const loading = document.getElementById('pdf-loading');
+    if (loading && document.body.contains(loading)) {
+      document.body.removeChild(loading);
+    }
+    
+    alert(`Error generating PDF: ${error.message}\n\nPlease check the browser console for details.`);
   }
 };
